@@ -4,13 +4,13 @@ from app.schemas.guide import SafetyFlag
 
 _P = {
     SafetyFlag.prompt_injection: [
-        r"ignore (all |any )?(previous|above|prior) (instructions|rules)",
+        r"ignore (all |any )?(previous|above|prior|your|the) (instructions|rules|guidelines)",
         r"system prompt", r"reveal your (prompt|instructions)", r"you are now",
         r"developer mode", r"pretend (you|to) (are|be)",
     ],
     SafetyFlag.distress: [
-        r"want to die", r"kill myself", r"end my life", r"hurt myself", r"self[- ]harm",
-        r"no reason to live",
+        r"want to die", r"kill myself", r"end my life", r"hurt(ing)? myself", r"self[- ]harm",
+        r"no reason to live", r"(don'?t|do not) want to (live|be alive|exist)", r"suicid",
     ],
     SafetyFlag.private_data_request: [
         r"(his|her|their|rohan'?s)\s+(income|salary|phone|number|address|password|date of birth|dob)",
@@ -21,7 +21,7 @@ _P = {
         r"will (we|it|this|he|she) (work|last|get married|be happy|succeed)",
         r"are we (compatible|meant|a good match)",
         r"is (he|she|this) (the one|right for me)",
-        r"chances (of|that)",
+        r"chances (we|of|that|it)",
     ],
     SafetyFlag.decision_request: [
         r"should i (marry|say yes|say no|reject|accept|break up|leave|continue|stop)",
