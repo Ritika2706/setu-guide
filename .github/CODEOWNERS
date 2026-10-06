@@ -1,0 +1,8 @@
+# Replace @handles with real GitHub usernames
+# app/schemas/   @lead
+# app/core/      @lead
+# app/safety/    @lead
+# app/rag/       @aiml2
+# data/ eval/    @aiml1
+# app/api/       @devops1
+# .github/ deploy/ docs/   @devops2
