@@ -3,11 +3,14 @@ Stage-aware Setu Guide assistant for the Chat with Setu Guide screen (Sambandh S
 
 ## Run
     pip install -r requirements.txt
-    uvicorn app.api.main:app --reload
+    uvicorn app.main:app --reload --port 8000      # app.api.main:app is the same app
     pytest -q
+
+Swagger: http://localhost:8000/docs
 
 ## Endpoint
 POST /v1/guide/chat. Schema: app/schemas/guide.py (frozen by lead).
+GET /health -> {"status": "ok"} (liveness for CI and deploys).
 Express (requireAuth) calls this service and sends only consented fields in `context` ({"viewer": {...}, "match": {...}}).
 This service never reads MongoDB.
 

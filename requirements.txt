@@ -1,5 +1,8 @@
-fastapi
-pydantic>=2
-uvicorn
-pytest
-httpx
+# Setu Guide API - runtime + test dependencies, exact pins for reproducible builds.
+# Latest stable versions checked on 2026-10-06 (PyPI). All support Python >= 3.10,
+# so they run on the CI interpreter (3.11) and locally. Owner: DevOps 1.
+fastapi==0.142.2
+pydantic==2.13.5
+uvicorn==0.54.0
+pytest==9.1.1
+httpx==0.28.1
