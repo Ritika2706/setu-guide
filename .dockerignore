@@ -1,0 +1,34 @@
+# Build context stays small and carries no secrets. Owner: DevOps 1.
+.git
+.github
+.gitignore
+
+# virtualenvs and caches
+.venv
+venv
+env
+__pycache__
+**/__pycache__
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+htmlcov
+.coverage
+
+# secrets - never send these to the docker daemon
+.env
+.env.*
+!.env.example
+
+# not needed inside the image
+tests
+docs
+eval
+deploy
+data
+docker-compose.yml
+docker
+README.md
+CONTRIBUTING.md
+*.md

@@ -1,0 +1,7 @@
+# Development and test dependencies. Includes the runtime set, so:
+#   pip install -r requirements-dev.txt
+# is enough to run the whole test suite locally and in CI.
+-r requirements.txt
+
+pytest==9.1.1
+httpx==0.28.1

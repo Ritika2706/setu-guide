@@ -1,0 +1,39 @@
+# Local run for the Day 2 service. Owner: DevOps 1.
+#
+#   cp .env.example .env      # then edit values
+#   docker compose up --build
+#   curl localhost:8000/health
+#
+# Every setting is read from the environment (.env), never from this file, so
+# placeholder values can change later without touching code.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: setu-guide-api:day2
+    container_name: setu-guide-api
+    ports:
+      - "8000:8000"
+    init: true
+    restart: unless-stopped
+
+    # Values come from .env (ignored by git). `required: false` keeps the file
+    # optional so a fresh clone can still start with the built-in defaults.
+    env_file:
+      - path: .env
+        required: false
+
+    # Optional: overrides for a single run, e.g.
+    #   USE_MOCK=false docker compose up
+    # environment:
+    #   LOG_LEVEL: DEBUG
+
+    # Model / knowledge-base files are mounted, not baked into the image.
+    # Create the folder first if you use it (it is git-ignored):
+    #   mkdir -p models && cp -r <your files> models/
+    volumes:
+      - ./models:/app/models:ro
+
+    # /health is probed by the HEALTHCHECK defined in docker/Dockerfile.
