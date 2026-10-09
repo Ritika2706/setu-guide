@@ -14,6 +14,13 @@ GET /health -> {"status": "ok"} (liveness for CI and deploys).
 Express (requireAuth) calls this service and sends only consented fields in `context` ({"viewer": {...}, "match": {...}}).
 This service never reads MongoDB.
 
+## API Documentation
+Integration-ready API document: docs/api.md (request/response schemas,
+enums, safety, errors, rate limiting, caching, mock/fallback, staging checklist).
+Postman collection: docs/postman/Setu-Guide.postman_collection.json
+(`base_url` defaults to http://localhost:8000; set it to
+https://setu-guide.onrender.com for staging).
+
 ## Day 2: Docker, config, rate limiting, caching
 
 ### Build and run (container)
