@@ -5,3 +5,6 @@
 
 pytest==9.1.1
 httpx==0.28.1
+
+# Load tests (tests/load/). Not needed to run the pytest suite.
+locust==2.46.7

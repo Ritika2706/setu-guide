@@ -109,6 +109,30 @@ The key is never logged and never appears in an error message.
 | Orchestrator entry point | `handle_chat()` missing; `handle_chat(request) -> ChatResponse` naming vs frozen `GuideRequest`/`GuideResponse` | lead |
 | Model volume path | `/app/models` vs `/app/data` | AI/ML |
 
+## Day 3: Load and failure testing
+
+Testing only — no new features, no changes under `app/core`, `app/rag`,
+`app/safety` or `app/schemas`. Full results, bug list and known limits:
+[docs/load_and_failure_test_notes.md](docs/load_and_failure_test_notes.md).
+How to re-run everything: [tests/README.md](tests/README.md).
+
+- **Load tests** (`tests/load/`, Locust pinned in `requirements-dev.txt`),
+  run against a container with `USE_MOCK=true` (never the real LLM quota):
+  - Scenario A — mixed traffic, 70 % quick action / 30 % free text
+  - Scenario B — same quick action repeated, latency split by `X-Cache` HIT/MISS
+  - Scenario C — one abusive `user_id` collects 429 + `Retry-After`, other users unaffected
+  - Scenario D — `/health` under load: fast and never rate limited
+  - Raw run CSVs (stats, failures, `docker stats`) in `tests/load/results/`.
+- **Failure tests** (`tests/failure/`, 40 tests): LLM timeout / exception /
+  invalid schema → 200 template fallback (never cached), full 422
+  `invalid_request` matrix, malformed JSON / wrong content-type / 1 MB body →
+  clean 4xx, 404 / 405 contract, unicode & Hindi input, 500 `internal_error`
+  with no stack trace, log hygiene on every path — plus container tests
+  (fail-fast without a secret, restart under load → `healthy`, `docker logs`
+  free of private data; these skip in CI, where the image is not built).
+- Pass criteria met: 5xx rate 0 % (< 1 %), p95 57 ms on mock traffic (< 2 s),
+  0 × 429 on `/health`, per-user limit isolated. Suite: **179 passing**.
+
 ## Layout
     app/api       FastAPI routes (+ chat wiring, rate limiter, cache)
     app/config.py environment settings (pydantic-settings)
@@ -118,7 +142,7 @@ The key is never logged and never appears in an error message.
     app/safety    safety guard
     data/         synthetic profiles and test conversations
     docker/       Dockerfile (multi-stage, non-root, healthcheck)
-    tests/        pytest
+    tests/        pytest (unit + failure + load; see tests/README.md)
     docs/         API docs, evaluation report, integration notes
 
 Each person's tasks: docs/team/<role>.md
