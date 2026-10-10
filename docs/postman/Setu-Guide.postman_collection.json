@@ -35,7 +35,7 @@
                   "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
                   "pm.test('body is {status:ok}', function () { pm.expect(pm.response.json()).to.eql({status: 'ok'}); });",
                   "pm.test('X-Request-Id present', function () { pm.expect(pm.response.headers.get('X-Request-Id')).to.be.a('string').and.not.empty; });",
-                  "pm.test('no X-Cache on health', function () { pm.expect(pm.response.headers.get('X-Cache'), 'X-Cache must be absent').to.be.null; });"
+                  "pm.test('no X-Cache on health', function () { pm.expect(pm.response.headers.get('X-Cache'), 'X-Cache must be absent').to.be.undefined; });"
                 ]
               }
             }
