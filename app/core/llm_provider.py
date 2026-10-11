@@ -5,6 +5,8 @@ from google import genai
 
 
 class LLMProvider:
+    """Base class for LLM providers."""
+
     def generate(self, prompt):
         raise NotImplementedError(
             "LLM provider has not been configured yet."
@@ -12,12 +14,11 @@ class LLMProvider:
 
 
 class MockLLMProvider(LLMProvider):
+    """Mock provider for development and automated tests."""
 
     def generate(self, prompt):
-
         prompt_lower = prompt.lower()
 
-        # Identify the intent from the prompt's specific instruction.
         if (
             "conversation ideas" in prompt_lower
             or "suggest conversation" in prompt_lower
@@ -81,68 +82,49 @@ class MockLLMProvider(LLMProvider):
 
 
 class GeminiLLMProvider(LLMProvider):
+    """Gemini provider using the project's configured API key."""
 
-    def __init__(self):
-
-        api_key = os.environ.get("GEMINI_API_KEY")
+    def __init__(self, api_key=None, timeout_seconds=10.0):
+        api_key = api_key or os.environ.get("LLM_API_KEY")
 
         if not api_key:
             raise ValueError(
-                "GEMINI_API_KEY environment variable is not set."
+                "LLM_API_KEY is required for Gemini."
             )
 
         self.client = genai.Client(
             api_key=api_key,
             http_options={
-                "timeout": 10000
+                "timeout": int(timeout_seconds * 1000)
             }
         )
 
     def generate(self, prompt):
-
         try:
             interaction = self.client.interactions.create(
                 model="gemini-3.8-flash",
                 input=prompt
             )
 
-        except KeyboardInterrupt:
-            print("Gemini request interrupted.")
-            return None
-
-        except Exception as error:
-            print(f"Gemini provider unavailable: {error}")
-            return None
-
-        try:
             output_text = interaction.output_text.strip()
 
-        except Exception as error:
-            print(f"Gemini output error: {error}")
-            return None
+            # Remove Markdown code fences if the provider returns them.
+            if output_text.startswith("```json"):
+                output_text = output_text[7:]
+            elif output_text.startswith("```"):
+                output_text = output_text[3:]
 
-        # Remove Markdown code fences if Gemini returns them.
-        if output_text.startswith("```json"):
-            output_text = output_text[7:]
+            if output_text.endswith("```"):
+                output_text = output_text[:-3]
 
-        elif output_text.startswith("```"):
-            output_text = output_text[3:]
+            return json.loads(output_text.strip())
 
-        if output_text.endswith("```"):
-            output_text = output_text[:-3]
-
-        output_text = output_text.strip()
-
-        try:
-            return json.loads(output_text)
-
-        except json.JSONDecodeError as error:
-            print(f"Gemini returned invalid JSON: {error}")
+        except Exception:
+            # Do not print prompts, credentials, or provider error details.
             return None
 
 
 if __name__ == "__main__":
-
     print("Testing MockLLMProvider...")
 
     provider = MockLLMProvider()
@@ -151,4 +133,4 @@ if __name__ == "__main__":
         "Generate three neutral conversation ideas."
     )
 
-    print(result)
+    print(json.dumps(result, indent=2, ensure_ascii=False))

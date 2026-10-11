@@ -499,3 +499,77 @@ def test_prompts_contain_required_context_placeholders():
         assert "Test user message" in prompt
         assert "Reflect" in prompt
         assert "Test retrieved context." in prompt
+
+
+def test_pipeline_falls_back_when_provider_returns_malformed_output(monkeypatch):
+    from app.core import pipeline
+
+    class MalformedProvider:
+        def generate(self, prompt):
+            return '{"intent": "conversation_ideas", "response": '
+
+    monkeypatch.setattr(
+        pipeline, "get_provider", lambda: MalformedProvider()
+    )
+
+    result = pipeline.run_pipeline("What can we talk about?")
+
+    assert result["intent"] == "conversation_ideas"
+    assert result["response"]
+    assert all(isinstance(item, str) for item in result["response"])
+
+
+def test_pipeline_falls_back_when_provider_returns_wrong_intent(monkeypatch):
+    from app.core import pipeline
+
+    class WrongIntentProvider:
+        def generate(self, prompt):
+            return {
+                "intent": "privacy_safety",
+                "response": ["A valid response for a different intent."]
+            }
+
+    monkeypatch.setattr(
+        pipeline, "get_provider", lambda: WrongIntentProvider()
+    )
+
+    result = pipeline.run_pipeline("What can we talk about?")
+
+    assert result["intent"] == "conversation_ideas"
+    assert "What is something you both enjoy discussing?" in result["response"]
+
+
+def test_pipeline_falls_back_when_provider_returns_none(monkeypatch):
+    from app.core import pipeline
+
+    class EmptyProvider:
+        def generate(self, prompt):
+            return None
+
+    monkeypatch.setattr(
+        pipeline, "get_provider", lambda: EmptyProvider()
+    )
+
+    result = pipeline.run_pipeline("What can we talk about?")
+
+    assert result["intent"] == "conversation_ideas"
+    assert result["response"]
+    assert all(isinstance(item, str) for item in result["response"])
+
+
+def test_mock_mode_does_not_initialize_live_provider(monkeypatch):
+    from types import SimpleNamespace
+    from app.core import pipeline
+
+    monkeypatch.setattr(
+        pipeline,
+        "get_settings",
+        lambda: SimpleNamespace(
+            use_mock=True,
+            llm_provider="gemini",
+        ),
+    )
+
+    provider = pipeline.get_provider()
+
+    assert isinstance(provider, pipeline.MockLLMProvider)
